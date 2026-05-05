@@ -1382,6 +1382,7 @@ let checkins=JSON.parse(localStorage.getItem('siam_checkins')||'[]');
 let weightChart=null;
 
 async function saveCheckin(){
+  console.log('=== SAVE CHECKIN START ===');
   const weight=parseFloat(document.getElementById('input-weight').value);
   const week=parseInt(document.getElementById('input-week').value);
   const energy=parseInt(document.getElementById('input-energy').value)||null;
@@ -1429,7 +1430,8 @@ async function saveCheckin(){
     }
   }
   if(SHEETS_WEBHOOK_URL!=='YOUR_APPS_SCRIPT_URL'){
-    try{await fetch(SHEETS_WEBHOOK_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({week:String(week),weight:String(weight),lost:String(lost),energy:energy||'—',sleep:sleep||'—',stress:stress||'—',feeling:feeling||'—',notes:notes,date:date})});sheetsOk=true;console.log('Sheet updated');}catch(err){console.error('Sheets:',err);sheetsOk=false;}
+    try{await fetch(SHEETS_WEBHOOK_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({week:String(week),weight:String(weight),lost:String(lost),energy:energy||'—',sleep:sleep||'—',stress:stress||'—',feeling:feeling||'—',notes:notes,date:date})});sheetsOk=true;console.log('Sheet updated');
+      console.log('✓ SHEETS SENT SUCCESSFULLY');}catch(err){console.error('Sheets:',err);sheetsOk=false;}
   }
   else{showStatus('✅ Logged! '+(emailOk?'📧 Email sent':'⚠ Email failed')+' · '+(sheetsOk?'📊 Sheet updated':'⚠ Sheet failed'),emailOk&&sheetsOk?'var(--accent3)':'var(--accent2)');}
   btn.textContent='📊 Log Check-In + Send to Trainer';btn.disabled=false;
