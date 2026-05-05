@@ -1353,7 +1353,7 @@ function closeModalBtn() {
 // EmailJS: emailjs.com → sign up → add Gmail service → create template with vars:
 // {{week}} {{weight}} {{lost}} {{energy}} {{sleep}} {{stress}} {{feeling}} {{notes}} {{date}}
 const EMAILJS_SERVICE_ID  = 'service_fshu1nl';
-const EMAILJS_TEMPLATE_ID = 'template_1q8832d';
+const EMAILJS_TEMPLATE_ID = '1q8832d';
 const EMAILJS_PUBLIC_KEY  = 'jAvMcUPQEWFNIt-wA';
 // Google Sheets: create sheet → Extensions → Apps Script → paste code below → Deploy as Web App → copy URL
 // function doPost(e){var s=SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();var d=JSON.parse(e.postData.contents);if(s.getLastRow()===0)s.appendRow(['Date','Week','Weight','Lost','Energy','Sleep','Stress','Vibe','Notes']);s.appendRow([d.date,d.week,d.weight,d.lost,d.energy||'-',d.sleep||'-',d.stress||'-',d.feeling||'-',d.notes]);return ContentService.createTextOutput('OK');}
@@ -1383,6 +1383,8 @@ async function saveCheckin(){
     try{await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
         to_email: 'strengthbyo@gmail.com',
         from_name: 'Siam Tracker',
+        name: 'Siam',
+        email: 'strengthbyo@gmail.com',
         week: String(week),
         weight: String(weight),
         lost: String(lost),
