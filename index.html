@@ -1383,8 +1383,6 @@ async function saveCheckin(){
     try{await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
         to_email: 'strengthbyo@gmail.com',
         from_name: 'Siam Tracker',
-        name: 'Siam',
-        email: 'strengthbyo@gmail.com',
         week: String(week),
         weight: String(weight),
         lost: String(lost),
