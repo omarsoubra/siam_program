@@ -1429,10 +1429,8 @@ async function saveCheckin(){
     }
   }
   if(SHEETS_WEBHOOK_URL!=='YOUR_APPS_SCRIPT_URL'){
-    try{await fetch(SHEETS_WEBHOOK_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({week,weight,lost,energy,sleep,stress,feeling,notes,date})});sheetsOk=true;}catch(err){console.error('Sheets:',err);}
+    try{await fetch(SHEETS_WEBHOOK_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({week:String(week),weight:String(weight),lost:String(lost),energy:energy||'—',sleep:sleep||'—',stress:stress||'—',feeling:feeling||'—',notes:notes,date:date})});sheetsOk=true;console.log('Sheet updated');}catch(err){console.error('Sheets:',err);sheetsOk=false;}
   }
-  const configured=true;
-  if(!configured){showStatus('✅ Logged locally. Set up EmailJS + Sheets to enable trainer notifications.','var(--accent3)');}
   else{showStatus('✅ Logged! '+(emailOk?'📧 Email sent':'⚠ Email failed')+' · '+(sheetsOk?'📊 Sheet updated':'⚠ Sheet failed'),emailOk&&sheetsOk?'var(--accent3)':'var(--accent2)');}
   btn.textContent='📊 Log Check-In + Send to Trainer';btn.disabled=false;
   ['input-weight','input-week','input-energy','input-sleep','input-stress','input-feeling'].forEach(id=>{document.getElementById(id).value='';});
