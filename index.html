@@ -1357,7 +1357,7 @@ const EMAILJS_TEMPLATE_ID = 'template_glftn89';
 const EMAILJS_PUBLIC_KEY  = 'jAvMcUPQEWFNIt-wA';
 // Google Sheets: create sheet → Extensions → Apps Script → paste code below → Deploy as Web App → copy URL
 // function doPost(e){var s=SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();var d=JSON.parse(e.postData.contents);if(s.getLastRow()===0)s.appendRow(['Date','Week','Weight','Lost','Energy','Sleep','Stress','Vibe','Notes']);s.appendRow([d.date,d.week,d.weight,d.lost,d.energy||'-',d.sleep||'-',d.stress||'-',d.feeling||'-',d.notes]);return ContentService.createTextOutput('OK');}
-const SHEETS_WEBHOOK_URL  = 'https://script.google.com/macros/s/AKfycbxqviUKXVkVI2iz9DyiKGz-vcDHSC-VNbA_tKAqnLEbHFeTyQ6fsUIV4cTeZDSB/exec';
+const SHEETS_WEBHOOK_URL  = 'https://script.google.com/macros/s/AKfycbyeuaR9PhdqM0IA8gM2VF1Dp6josOmKQqWWwxwCIYNKRFbiLk4AQ9jIG9dMlAiWPY4yTQ/exec';
 try{if(typeof emailjs!=='undefined'&&EMAILJS_PUBLIC_KEY){emailjs.init({publicKey:EMAILJS_PUBLIC_KEY});}}catch(e){console.error('EmailJS init:',e);}
 
 let checkins=JSON.parse(localStorage.getItem('siam_checkins')||'[]');
@@ -1410,8 +1410,30 @@ async function saveCheckin(){
       emailOk = false;
     }
   }
-  if(SHEETS_WEBHOOK_URL!=='YOUR_APPS_SCRIPT_URL'){
-    try{await fetch(SHEETS_WEBHOOK_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({week:String(week),weight:String(weight),lost:String(lost),energy:energy||'—',sleep:sleep||'—',stress:stress||'—',feeling:feeling||'—',notes:notes,date:date})});sheetsOk=true;console.log('Sheet updated');}catch(err){console.error('Sheets:',err);sheetsOk=false;}
+  if(SHEETS_WEBHOOK_URL && SHEETS_WEBHOOK_URL!=='YOUR_APPS_SCRIPT_URL'){
+    // URL-encoded form body avoids the no-cors+Content-Type:application/json
+    // gotcha (browsers strip the JSON Content-Type silently). Apps Script
+    // reads these as e.parameter.field on the server side.
+    try{
+      const fd = new URLSearchParams();
+      fd.append('date', date);
+      fd.append('week', String(week));
+      fd.append('weight', String(weight));
+      fd.append('lost', String(lost));
+      fd.append('energy',  energy  ? String(energy)  : '-');
+      fd.append('sleep',   sleep   ? String(sleep)   : '-');
+      fd.append('stress',  stress  ? String(stress)  : '-');
+      fd.append('feeling', feeling ? String(feeling) : '-');
+      fd.append('notes',   notes);
+      // mode:'no-cors' because Apps Script doesn't return CORS headers; we
+      // can't read the response, so we treat 'no thrown error' as success.
+      await fetch(SHEETS_WEBHOOK_URL, { method:'POST', mode:'no-cors', body: fd });
+      sheetsOk = true;
+      console.log('Sheet POST sent');
+    }catch(err){
+      console.error('Sheets fetch threw:', err);
+      sheetsOk = false;
+    }
   }
   showStatus('✅ Logged! '+(emailOk?'📧 Email sent':'⚠ Email failed')+' · '+(sheetsOk?'📊 Sheet updated':'⚠ Sheet failed'),emailOk&&sheetsOk?'var(--accent3)':'var(--accent2)');
   btn.textContent='📊 Log Check-In + Send to Trainer';btn.disabled=false;
