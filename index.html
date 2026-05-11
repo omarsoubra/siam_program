@@ -989,7 +989,11 @@ const howTos = {
   "Hanging Leg Raise": "Hang from a pull-up bar with a strong grip. Brace your core hard and raise your legs until they're parallel to the floor (or higher if you can). Lower slowly — no swinging. More advanced than knee raises.",
   "Cable Bicep Curl": "Stand facing the cable machine with it set at the lowest position. Grip the straight bar or rope with an underhand grip, elbows tucked at your sides. Curl the weight up to shoulder height, squeezing your biceps hard at the top. Lower slowly — the eccentric is where a lot of the growth happens. Keep elbows stationary throughout.",
   "Overhead Tricep Extension (DB)": "Hold one dumbbell with both hands, arms extended overhead. Keep your elbows pointing forward and close to your head — they should not flare out. Lower the weight behind your head by bending at the elbows. Extend back to the start and squeeze your triceps at the top. Control the weight down slowly.",
-  "Landmine Twist": "Insert one end of a barbell into a corner or landmine attachment. Grip the other end with both hands, arms extended. Rotate the bar from one side to the other in a controlled arc. Keep hips still — the rotation comes from your core, not your legs."
+  "Landmine Twist": "Insert one end of a barbell into a corner or landmine attachment. Grip the other end with both hands, arms extended. Rotate the bar from one side to the other in a controlled arc. Keep hips still — the rotation comes from your core, not your legs.",
+  "Pec Deck": "Sit on the machine with your back flat against the pad and feet planted. Grip the handles (or forearms on the pads — depending on machine). Squeeze your chest to bring the handles together in front of your body in a hugging arc. Hold for 1 second at peak contraction. Slowly return to the start, feeling the chest stretch. Don't let the weight pull your shoulders too far back — protect the front delts.",
+  "Overhead Cable Tricep Ext": "Set the cable at the lowest pulley with a rope attachment. Face away from the cable, rope behind your head, elbows pointing forward and tight to your head. Extend your arms overhead by straightening the elbows — squeeze your triceps hard at lockout. Lower the rope back behind your head slowly. Cable keeps tension on the triceps through the full range of motion, unlike DBs which lose tension at the top.",
+  "Tricep Pushdown (Cable)": "Set the cable at the top with a straight bar or V-bar. Elbows tucked tight at your sides — they don't move. Push the bar down by extending the elbows, squeezing your triceps hard at the bottom. Slowly return to the start — control the eccentric. If you feel it more in the front delts than the triceps, you're swinging — slow it down.",
+  "Ab Crunch Machine": "Sit in the machine and grip the handles at head level (or pads against chest depending on machine). Crunch forward by curling your spine — bring your elbows toward your knees. Hold for 1 second at peak contraction. Return slowly, feeling the stretch at the top. The work should come from your abs, not from pulling with your arms or hip flexors."
 };
 
 const phases = {
@@ -1031,13 +1035,13 @@ const phases = {
         label: "Day 3 — Chest + Arms",
         badge: "PUSH",
         exercises: [
-          { name: "Incline DB Chest Press", sets: "4", reps: "10–12", weight: "16kg ea", rest: "90s", rpe: "7" },
-          { name: "Flat DB Chest Press", sets: "4", reps: "10–12", weight: "16kg ea", rest: "90s", rpe: "7" },
-          { name: "Cable Chest Fly (Low)", sets: "3", reps: "12–15", weight: "10kg ea", rest: "60s", rpe: "7" },
-          { name: "Tricep Pushdown (Rope)", sets: "3", reps: "12–15", weight: "15kg", rest: "60s", rpe: "6" },
-          { name: "Overhead Tricep Extension (DB)", sets: "3", reps: "12–15", weight: "12kg", rest: "60s", rpe: "7" },
+          { name: "Incline DB Chest Press", sets: "4", reps: "10–12", weight: "22.5kg ea", rest: "90s", rpe: "7" },
+          { name: "Flat DB Chest Press", sets: "4", reps: "10–12", weight: "17.5kg ea", rest: "90s", rpe: "7" },
+          { name: "Pec Deck", sets: "3", reps: "12–15", weight: "40kg", rest: "60s", rpe: "7" },
+          { name: "Tricep Pushdown (Cable)", sets: "3", reps: "12–15", weight: "8.5kg", rest: "60s", rpe: "7" },
+          { name: "Overhead Cable Tricep Ext", sets: "3", reps: "12–15", weight: "10kg", rest: "60s", rpe: "7" },
           { name: "DB Hammer Curl", sets: "3", reps: "10–12", weight: "10kg ea", rest: "60s", rpe: "7" },
-          { name: "Hanging Knee Raises", sets: "3", reps: "12", weight: "BW", rest: "60s", rpe: "6" },
+          { name: "Ab Crunch Machine", sets: "3", reps: "15", weight: "10kg", rest: "60s", rpe: "6" },
         ]
       },
       {
@@ -1060,10 +1064,10 @@ const phases = {
       ["DB Shoulder Press", "12kg ea", "14kg ea", "14kg ea", "16kg ea"],
       ["Leg Press", "60kg", "70kg", "75kg", "80kg"],
       ["Romanian DL (DB)", "20kg ea", "22kg ea", "24kg ea", "26kg ea"],
-      ["Incline DB Press", "16kg ea", "18kg ea", "18kg ea", "20kg ea"],
+      ["Incline DB Press", "22.5kg ea", "24kg ea", "25kg ea", "26kg ea"],
       ["Pull-Up Assisted", "Assist -30", "Assist -25", "Assist -22", "Assist -20"],
       ["Cable Bicep Curl", "12kg", "14kg", "14kg", "15kg"],
-      ["Overhead Tricep Ext", "12kg", "14kg", "14kg", "16kg"],
+      ["Overhead Cable Tri Ext", "10kg", "11kg", "13kg", "14kg"],
     ]
   },
   2: {
@@ -1104,13 +1108,13 @@ const phases = {
         label: "Day 3 — Chest + Arms",
         badge: "PUSH",
         exercises: [
-          { name: "Incline DB Chest Press", sets: "4", reps: "8–10", weight: "20kg ea", rest: "90s", rpe: "8" },
-          { name: "Flat DB Chest Press", sets: "4", reps: "8–10", weight: "20kg ea", rest: "90s", rpe: "8" },
-          { name: "Cable Chest Fly (Low)", sets: "3", reps: "12", weight: "14kg ea", rest: "60s", rpe: "7" },
-          { name: "Tricep Pushdown (Rope)", sets: "3", reps: "12", weight: "20kg", rest: "60s", rpe: "7" },
-          { name: "Overhead Tricep Extension (DB)", sets: "3", reps: "10–12", weight: "16kg", rest: "60s", rpe: "8" },
-          { name: "DB Hammer Curl", sets: "3", reps: "10", weight: "14kg ea", rest: "60s", rpe: "8" },
-          { name: "Hanging Knee Raises", sets: "3", reps: "15", weight: "BW", rest: "60s", rpe: "7" },
+          { name: "Incline DB Chest Press", sets: "4", reps: "8–10", weight: "27.5kg ea", rest: "90s", rpe: "8" },
+          { name: "Flat DB Chest Press", sets: "4", reps: "8–10", weight: "22.5kg ea", rest: "90s", rpe: "8" },
+          { name: "Pec Deck", sets: "3", reps: "10–12", weight: "47.5kg", rest: "60s", rpe: "7" },
+          { name: "Tricep Pushdown (Cable)", sets: "3", reps: "10–12", weight: "12.5kg", rest: "60s", rpe: "7" },
+          { name: "Overhead Cable Tricep Ext", sets: "3", reps: "10–12", weight: "15kg", rest: "60s", rpe: "8" },
+          { name: "DB Hammer Curl", sets: "3", reps: "10", weight: "13kg ea", rest: "60s", rpe: "8" },
+          { name: "Ab Crunch Machine", sets: "3", reps: "15", weight: "15kg", rest: "60s", rpe: "7" },
         ]
       },
       {
@@ -1133,10 +1137,10 @@ const phases = {
       ["DB Shoulder Press", "16kg ea", "18kg ea", "18kg ea", "20kg ea"],
       ["Leg Press", "80kg", "90kg", "95kg", "100kg"],
       ["Romanian DL (DB)", "26kg ea", "28kg ea", "28kg ea", "30kg ea"],
-      ["Incline DB Press", "20kg ea", "22kg ea", "22kg ea", "24kg ea"],
+      ["Incline DB Press", "27.5kg ea", "30kg ea", "30kg ea", "32kg ea"],
       ["Pull-Up Assisted", "Assist -20", "Assist -15", "Assist -12", "Assist -10"],
       ["Cable Bicep Curl", "15kg", "17.5kg", "17.5kg", "20kg"],
-      ["Overhead Tricep Ext", "16kg", "18kg", "18kg", "20kg"],
+      ["Overhead Cable Tri Ext", "15kg", "17kg", "18kg", "20kg"],
     ]
   },
   3: {
@@ -1177,13 +1181,13 @@ const phases = {
         label: "Day 3 — Chest + Arms",
         badge: "PUSH",
         exercises: [
-          { name: "Incline DB Chest Press", sets: "5", reps: "6–8", weight: "26kg ea", rest: "2 min", rpe: "8–9" },
-          { name: "Flat DB Chest Press", sets: "4", reps: "8", weight: "24kg ea", rest: "90s", rpe: "8" },
-          { name: "Cable Chest Fly (Low)", sets: "3", reps: "10–12", weight: "18kg ea", rest: "60s", rpe: "8" },
-          { name: "Tricep Pushdown (Rope)", sets: "4", reps: "10", weight: "25kg", rest: "60s", rpe: "8" },
-          { name: "Overhead Tricep Extension (DB)", sets: "3", reps: "8–10", weight: "20kg", rest: "60s", rpe: "8" },
-          { name: "DB Hammer Curl", sets: "4", reps: "8–10", weight: "18kg ea", rest: "60s", rpe: "8" },
-          { name: "Hanging Leg Raise", sets: "3", reps: "12", weight: "BW", rest: "60s", rpe: "8" },
+          { name: "Incline DB Chest Press", sets: "5", reps: "6–8", weight: "32kg ea", rest: "2 min", rpe: "8–9" },
+          { name: "Flat DB Chest Press", sets: "4", reps: "8", weight: "26kg ea", rest: "90s", rpe: "8" },
+          { name: "Pec Deck", sets: "3", reps: "10–12", weight: "55kg", rest: "60s", rpe: "8" },
+          { name: "Tricep Pushdown (Cable)", sets: "4", reps: "10", weight: "16kg", rest: "60s", rpe: "8" },
+          { name: "Overhead Cable Tricep Ext", sets: "3", reps: "8–10", weight: "20kg", rest: "60s", rpe: "8" },
+          { name: "DB Hammer Curl", sets: "4", reps: "8–10", weight: "16kg ea", rest: "60s", rpe: "8" },
+          { name: "Ab Crunch Machine", sets: "4", reps: "15", weight: "22kg", rest: "60s", rpe: "8" },
         ]
       },
       {
@@ -1206,10 +1210,10 @@ const phases = {
       ["DB Shoulder Press", "20kg ea", "22kg ea", "24kg ea", "24kg ea"],
       ["Leg Press", "100kg", "110kg", "115kg", "120kg"],
       ["Romanian DL (DB)", "30kg ea", "32kg ea", "34kg ea", "36kg ea"],
-      ["Incline DB Press", "26kg ea", "28kg ea", "28kg ea", "30kg ea"],
+      ["Incline DB Press", "32kg ea", "34kg ea", "34kg ea", "36kg ea"],
       ["Pull-Up Assisted", "Assist -10", "Assist -5", "Bodyweight", "Bodyweight"],
       ["Cable Bicep Curl", "20kg", "22.5kg", "22.5kg", "25kg"],
-      ["Overhead Tricep Ext", "20kg", "22kg", "22kg", "24kg"],
+      ["Overhead Cable Tri Ext", "20kg", "22kg", "22kg", "24kg"],
     ]
   }
 };
