@@ -613,6 +613,136 @@
     .meal-card { grid-template-columns: 1fr; }
     .meal-cals { text-align: left; }
   }
+
+  /* ─── Trainer edit controls (Siam v5) ─── */
+  .trainer-icon-btn {
+    background: rgba(255,102,68,0.12);
+    border: 1px solid rgba(255,102,68,0.4);
+    color: #ff6644;
+    font-size: 0.65rem;
+    line-height: 1;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    margin-left: 0.4rem;
+  }
+  .trainer-icon-btn:hover { background: rgba(255,102,68,0.25); }
+  .trainer-icon-btn.del { background: rgba(255,68,68,0.12); border-color: rgba(255,68,68,0.4); color: #ff4444; }
+  .trainer-icon-btn.del:hover { background: rgba(255,68,68,0.25); }
+  .trainer-add-row {
+    text-align: center;
+    padding: 0.75rem 0;
+    border-top: 1px dashed rgba(255,102,68,0.25);
+  }
+  .trainer-add-btn, .trainer-reset-btn {
+    background: transparent;
+    border: 1px dashed rgba(255,102,68,0.5);
+    color: #ff6644;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    margin: 0 0.3rem;
+  }
+  .trainer-add-btn:hover, .trainer-reset-btn:hover {
+    background: rgba(255,102,68,0.1);
+    border-style: solid;
+  }
+  .trainer-edited-badge {
+    display: inline-block;
+    background: rgba(255,102,68,0.18);
+    color: #ff6644;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.1em;
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+  .edit-modal-grid {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 0.6rem 1rem;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+  .edit-modal-grid label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .edit-modal-grid input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.55rem 0.75rem;
+    border-radius: 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+  }
+  .edit-modal-grid input:focus { outline: none; border-color: var(--accent); }
+  .edit-modal-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    margin-top: 1rem;
+  }
+  .edit-modal-save, .edit-modal-cancel {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    padding: 0.7rem 1.2rem;
+    border-radius: 6px;
+    cursor: pointer;
+    text-transform: uppercase;
+  }
+  .edit-modal-save { background: var(--accent); color: #000; border: none; }
+  .edit-modal-cancel { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+  .sync-indicator {
+    position: fixed;
+    bottom: 60px;
+    right: 14px;
+    background: rgba(0,0,0,0.7);
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    z-index: 9000;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .sync-indicator.show { opacity: 1; }
+  .sync-indicator.ok { color: var(--accent3); }
+  .sync-indicator.err { color: #ff4444; }
+  .sync-status-badge {
+    position: fixed;
+    bottom: 14px;
+    left: 14px;
+    background: rgba(0,0,0,0.5);
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    padding: 0.4rem 0.7rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    z-index: 8000;
+    opacity: 0.7;
+    cursor: pointer;
+    user-select: none;
+  }
+  .sync-status-badge:hover { opacity: 1; }
+  .sync-status-badge.ok    { color: var(--accent3); border-color: rgba(0,229,160,0.4); }
+  .sync-status-badge.warn  { color: var(--accent2); border-color: rgba(255,107,53,0.4); }
+  .sync-status-badge.err   { color: #ff4466; border-color: rgba(255,68,102,0.4); }
+
 </style>
 </head>
 <body>
@@ -1792,7 +1922,8 @@ function trainerLogin(){
     const c2=document.getElementById('cardio-card-p2');if(c2){c2.style.filter='';c2.style.pointerEvents='';c2.style.userSelect='';}
     const c3=document.getElementById('cardio-card-p3');if(c3){c3.style.filter='';c3.style.pointerEvents='';c3.style.userSelect='';}
     const cu=document.getElementById('cardio-unlock-notice');if(cu)cu.style.display='none';
-    alert('✓ Trainer mode active — Phase 2 + Phase 3 unlocked.');
+    if (typeof renderDay === 'function') renderDay();
+    alert('✓ Trainer mode active — Phase 2 + Phase 3 unlocked.\n\nEdit/Add/Delete buttons are now visible on each exercise.\nChanges save instantly and sync to Siam\'s device.');
   } else { alert('Wrong password.'); }
 }
 function trainerLogout(){
@@ -1833,5 +1964,349 @@ window.addEventListener('load',function(){
 });
 if(isTrainerMode()){setUnlocked(2);setUnlocked(3);window.addEventListener('load',showTrainerBadge);}
 </script>
+
+<!-- EDIT MODAL (Siam trainer mode) -->
+<div class="modal-overlay" id="edit-modal-overlay" onclick="closeEditModal(event)">
+  <div class="modal" style="max-width:520px;">
+    <button class="modal-close" onclick="cancelEdit()">✕</button>
+    <div class="modal-title" id="edit-modal-title">Edit Exercise</div>
+    <div class="edit-modal-grid">
+      <label for="ed-name">Name</label>          <input id="ed-name" type="text" />
+      <label for="ed-sets">Sets</label>          <input id="ed-sets" type="text" />
+      <label for="ed-reps">Reps</label>          <input id="ed-reps" type="text" />
+      <label for="ed-weight">Weight</label>      <input id="ed-weight" type="text" />
+      <label for="ed-rest">Rest</label>          <input id="ed-rest" type="text" />
+      <label for="ed-rpe">RPE</label>            <input id="ed-rpe" type="text" />
+    </div>
+    <div class="edit-modal-actions">
+      <button class="edit-modal-cancel" onclick="cancelEdit()">Cancel</button>
+      <button class="edit-modal-save" onclick="saveEdit()">Save</button>
+    </div>
+  </div>
+</div>
+<div class="sync-indicator" id="sync-indicator"></div>
+<div class="sync-status-badge" id="sync-status-badge" onclick="pullOverrides()" title="Click to force sync now">⟳ checking...</div>
+
+<script>
+// ╔═════════════════════════════════════════════════════════════════════════╗
+// ║  OVERRIDES ENGINE (Siam v5) — trainer can edit/add/delete exercises;    ║
+// ║  persists in localStorage and syncs to Google Sheets webhook.           ║
+// ╚═════════════════════════════════════════════════════════════════════════╝
+const SIAM_STORAGE_KEY = 'siam';
+const SIAM_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzqOeCQvc0XWjyFlJUF5-40Wroz1-tb_fSiot-G9vnOyCr1hwH4jErVBA8SN_3cc0O9gg/exec';
+const SIAM_LS_OVERRIDES = SIAM_STORAGE_KEY + '_overrides';
+
+function loadOverrides() {
+  try { return JSON.parse(localStorage.getItem(SIAM_LS_OVERRIDES) || '{}'); }
+  catch(e) { return {}; }
+}
+function saveOverridesLocal(o) {
+  localStorage.setItem(SIAM_LS_OVERRIDES, JSON.stringify(o));
+}
+function showSyncMsg(text, cls) {
+  const el = document.getElementById('sync-indicator');
+  if (!el) return;
+  el.textContent = text;
+  el.className = 'sync-indicator show ' + (cls || '');
+  clearTimeout(window._syncTimeout);
+  window._syncTimeout = setTimeout(() => el.classList.remove('show'), 2500);
+}
+let _lastSyncMs = 0;
+let _lastSyncStatus = 'never';
+function updateSyncBadge() {
+  const el = document.getElementById('sync-status-badge');
+  if (!el) return;
+  if (!SIAM_WEBHOOK_URL) {
+    el.textContent = '⟳ no cloud (local only)';
+    el.className = 'sync-status-badge warn';
+    return;
+  }
+  if (_lastSyncStatus === 'never') { el.textContent = '⟳ checking...'; el.className = 'sync-status-badge'; return; }
+  if (_lastSyncStatus === 'err')   { el.textContent = '⟳ sync failed — click to retry'; el.className = 'sync-status-badge err'; return; }
+  const ago = Math.floor((Date.now() - _lastSyncMs) / 1000);
+  let label;
+  if (ago < 5)         label = 'synced just now';
+  else if (ago < 60)   label = 'synced ' + ago + 's ago';
+  else if (ago < 3600) label = 'synced ' + Math.floor(ago/60) + 'm ago';
+  else                 label = 'synced ' + Math.floor(ago/3600) + 'h ago';
+  el.textContent = '⟳ ' + label;
+  el.className = 'sync-status-badge ok';
+}
+function postOverride(dayKey, exercises) {
+  if (!SIAM_WEBHOOK_URL) { showSyncMsg('saved locally (no cloud)', 'warn'); return; }
+  fetch(SIAM_WEBHOOK_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({
+      client: SIAM_STORAGE_KEY,
+      dayKey: dayKey,
+      exercises: exercises,
+      timestamp: new Date().toISOString()
+    })
+  }).then(() => {
+    _lastSyncMs = Date.now();
+    _lastSyncStatus = 'ok';
+    updateSyncBadge();
+    showSyncMsg('✓ synced to cloud', 'ok');
+    setTimeout(pullOverrides, 2500);
+  }).catch(e => {
+    console.warn('Sync POST failed:', e);
+    _lastSyncStatus = 'err';
+    updateSyncBadge();
+    showSyncMsg('✗ sync failed', 'err');
+  });
+}
+async function pullOverrides() {
+  if (!SIAM_WEBHOOK_URL) { updateSyncBadge(); return; }
+  try {
+    const url = SIAM_WEBHOOK_URL
+              + (SIAM_WEBHOOK_URL.includes('?') ? '&' : '?')
+              + 'client=' + encodeURIComponent(SIAM_STORAGE_KEY)
+              + '&_=' + Date.now();
+    const resp = await fetch(url, { cache: 'no-store' });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    if (data && typeof data === 'object') {
+      const before = JSON.stringify(loadOverrides());
+      const after  = JSON.stringify(data);
+      saveOverridesLocal(data);
+      _lastSyncMs = Date.now();
+      _lastSyncStatus = 'ok';
+      updateSyncBadge();
+      const t = document.getElementById('section-training');
+      if (t && t.classList.contains('active') && typeof renderDay === 'function' && before !== after) {
+        renderDay();
+        showSyncMsg('✓ updated from cloud', 'ok');
+      }
+    }
+  } catch(e) {
+    console.warn('Pull failed:', e);
+    _lastSyncStatus = 'err';
+    updateSyncBadge();
+  }
+}
+function startAutoPoll() {
+  setInterval(() => {
+    if (typeof document.hidden === 'boolean' && document.hidden) return;
+    pullOverrides();
+  }, 30000);
+  setInterval(updateSyncBadge, 5000);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) pullOverrides();
+  });
+}
+function getDayExercises(phaseN, dayIdx) {
+  const o = loadOverrides();
+  const key = 'p' + phaseN + '.d' + dayIdx;
+  if (o[key] && Array.isArray(o[key])) return o[key];
+  return phases[phaseN].days[dayIdx].exercises;
+}
+function isDayOverridden(phaseN, dayIdx) {
+  const o = loadOverrides();
+  return !!o['p' + phaseN + '.d' + dayIdx];
+}
+function setDayExercises(phaseN, dayIdx, exercises) {
+  const o = loadOverrides();
+  const key = 'p' + phaseN + '.d' + dayIdx;
+  o[key] = exercises;
+  saveOverridesLocal(o);
+  postOverride(key, exercises);
+}
+function resetDay(phaseN, dayIdx) {
+  if (!confirm('Reset this day to the default plan? Any custom changes will be lost.')) return;
+  const o = loadOverrides();
+  const key = 'p' + phaseN + '.d' + dayIdx;
+  delete o[key];
+  saveOverridesLocal(o);
+  postOverride(key, null);
+  renderDay();
+}
+let _editingIdx = -1;
+let _editingIsNew = false;
+function editExercise(idx) {
+  const ex = getDayExercises(currentPhase, currentDay)[idx];
+  if (!ex) return;
+  _editingIdx = idx; _editingIsNew = false;
+  document.getElementById('edit-modal-title').textContent = 'Edit Exercise';
+  document.getElementById('ed-name').value   = ex.name || '';
+  document.getElementById('ed-sets').value   = ex.sets || '';
+  document.getElementById('ed-reps').value   = ex.reps || '';
+  document.getElementById('ed-weight').value = ex.weight || '';
+  document.getElementById('ed-rest').value   = ex.rest || '';
+  document.getElementById('ed-rpe').value    = ex.rpe || '';
+  document.getElementById('edit-modal-overlay').classList.add('open');
+}
+function addExercise() {
+  _editingIdx = -1; _editingIsNew = true;
+  document.getElementById('edit-modal-title').textContent = 'Add Exercise';
+  document.getElementById('ed-name').value   = '';
+  document.getElementById('ed-sets').value   = '3';
+  document.getElementById('ed-reps').value   = '8';
+  document.getElementById('ed-weight').value = '';
+  document.getElementById('ed-rest').value   = '90s';
+  document.getElementById('ed-rpe').value    = '7';
+  document.getElementById('edit-modal-overlay').classList.add('open');
+}
+function cancelEdit() { document.getElementById('edit-modal-overlay').classList.remove('open'); }
+function closeEditModal(e) {
+  if (e.target === document.getElementById('edit-modal-overlay')) cancelEdit();
+}
+function saveEdit() {
+  const newEx = {
+    name:   document.getElementById('ed-name').value.trim(),
+    sets:   document.getElementById('ed-sets').value.trim(),
+    reps:   document.getElementById('ed-reps').value.trim(),
+    weight: document.getElementById('ed-weight').value.trim(),
+    rest:   document.getElementById('ed-rest').value.trim(),
+    rpe:    document.getElementById('ed-rpe').value.trim(),
+  };
+  if (!newEx.name) { alert('Name is required.'); return; }
+  const exercises = getDayExercises(currentPhase, currentDay).map(e => ({...e}));
+  let oldWeight = null;
+  if (_editingIsNew) {
+    exercises.push(newEx);
+  } else {
+    oldWeight = exercises[_editingIdx].weight;
+    exercises[_editingIdx] = newEx;
+  }
+  setDayExercises(currentPhase, currentDay, exercises);
+  cancelEdit();
+  renderDay();
+  if (!_editingIsNew && oldWeight !== newEx.weight && oldWeight && newEx.weight) {
+    promptApplyForward(newEx.name, oldWeight, newEx.weight);
+  }
+}
+function deleteExercise(idx) {
+  const exs = getDayExercises(currentPhase, currentDay);
+  const exName = exs[idx] ? exs[idx].name : 'this exercise';
+  if (!confirm('Delete "' + exName + '" from this day?')) return;
+  const newExs = exs.filter((_, i) => i !== idx);
+  setDayExercises(currentPhase, currentDay, newExs);
+  renderDay();
+}
+function _parseWeight(w) {
+  const m = String(w).match(/(-?\d+(?:\.\d+)?)/);
+  return m ? parseFloat(m[1]) : null;
+}
+function _replaceWeight(w, newNum) {
+  return String(w).replace(/-?\d+(?:\.\d+)?/, String(newNum));
+}
+function promptApplyForward(exName, oldW, newW) {
+  const oldNum = _parseWeight(oldW);
+  const newNum = _parseWeight(newW);
+  if (oldNum == null || newNum == null) return;
+  const diff = newNum - oldNum;
+  if (diff === 0) return;
+  const matches = [];
+  for (let p = 1; p <= 3; p++) {
+    for (let d = 0; d < phases[p].days.length; d++) {
+      if (p === currentPhase && d === currentDay) continue;
+      const exs = getDayExercises(p, d);
+      exs.forEach((e, i) => {
+        if (e.name === exName) {
+          const eOld = _parseWeight(e.weight);
+          if (eOld != null) {
+            const eNew = _replaceWeight(e.weight, +(eOld + diff).toFixed(2));
+            matches.push({ p, d, i, oldW: e.weight, newW: eNew });
+          }
+        }
+      });
+    }
+  }
+  if (matches.length === 0) return;
+  const sign = diff > 0 ? '+' : '';
+  const msg = 'Also apply ' + sign + diff + 'kg to "' + exName + '" in ' + matches.length + ' other day(s)?\n\n' +
+              matches.slice(0, 8).map(m =>
+                '  Phase ' + m.p + ' Day ' + (m.d + 1) + ': ' + m.oldW + ' → ' + m.newW
+              ).join('\n') +
+              (matches.length > 8 ? '\n  ... and ' + (matches.length - 8) + ' more' : '');
+  if (!confirm(msg)) return;
+  matches.forEach(m => {
+    const exs = getDayExercises(m.p, m.d).map(e => ({...e}));
+    exs[m.i].weight = m.newW;
+    setDayExercises(m.p, m.d, exs);
+  });
+  alert('✓ Applied to ' + matches.length + ' day(s). Reload on the client device to pull the changes.');
+}
+function _safeIsTrainerMode() {
+  try { return (typeof isTrainerMode === 'function') && isTrainerMode(); }
+  catch(e) { return false; }
+}
+
+// Replace renderDay with override-aware version
+window.renderDay = function() {
+  const p = phases[currentPhase];
+  const day = p.days[currentDay];
+  const exercises = getDayExercises(currentPhase, currentDay);
+  const trainer = _safeIsTrainerMode();
+  const edited = isDayOverridden(currentPhase, currentDay);
+
+  const rows = exercises.map((ex, i) => {
+    const hasHowTo = howTos[ex.name];
+    const btn = hasHowTo ? `<button class="howto-btn" onclick="openModal('${ex.name.replace(/'/g,"\\'")}')">HOW TO</button>` : '';
+    const edBtns = trainer
+      ? `<button class="trainer-icon-btn" onclick="editExercise(${i})" title="Edit">✏️ EDIT</button>
+         <button class="trainer-icon-btn del" onclick="deleteExercise(${i})" title="Delete">✕</button>`
+      : '';
+    return `
+      <tr>
+        <td class="ex-name">${ex.name}${btn}${edBtns}</td>
+        <td class="ex-sets">${ex.sets}</td>
+        <td class="ex-reps">${ex.reps}</td>
+        <td class="ex-weight">${ex.weight}</td>
+        <td class="ex-rest">${ex.rest}</td>
+        <td class="ex-rpe"><span class="rpe-pill ${getRpeClass(ex.rpe)}">${ex.rpe}</span></td>
+      </tr>
+    `;
+  }).join('');
+
+  const trainerFooter = trainer
+    ? `<div class="trainer-add-row">
+         <button class="trainer-add-btn" onclick="addExercise()">+ Add Exercise</button>
+         ${edited ? `<button class="trainer-reset-btn" onclick="resetDay(${currentPhase},${currentDay})">↶ Reset Day to Default</button>` : ''}
+       </div>`
+    : '';
+
+  const editedBadge = edited ? `<span class="trainer-edited-badge">EDITED</span>` : '';
+
+  const progRows = p.progression.map((row, i) => {
+    if (i === 0) return `<tr>${row.map(h => `<th>${h}</th>`).join('')}</tr>`;
+    return `<tr>${row.map((v, j) => `<td>${v}</td>`).join('')}</tr>`;
+  }).join('');
+
+  document.getElementById('workout-content').innerHTML = `
+    <div class="workout-day-title">
+      ${day.label}
+      <span class="day-badge">${day.badge}</span>
+      ${editedBadge}
+    </div>
+    <div class="workout-table-wrap">
+      <table>
+        <thead>
+          <tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Weight</th><th>Rest</th><th>RPE</th></tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+      ${trainerFooter}
+    </div>
+  `;
+
+  document.getElementById('progression-content').innerHTML = `
+    <div class="section-tag" style="margin-bottom:0.75rem;">Weekly Progression</div>
+    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:1rem;">Only increase weight if you hit the top of your rep range with good form.</p>
+    <div class="prog-table-wrap">
+      <table class="prog-table"><tbody>${progRows}</tbody></table>
+    </div>
+  `;
+};
+
+// Pull cloud overrides on boot, then start 30s auto-poll so changes from
+// other devices appear without manual refresh. Paints the persistent badge.
+updateSyncBadge();
+pullOverrides();
+startAutoPoll();
+</script>
+
 </body>
 </html>
