@@ -743,6 +743,79 @@
   .sync-status-badge.warn  { color: var(--accent2); border-color: rgba(255,107,53,0.4); }
   .sync-status-badge.err   { color: #ff4466; border-color: rgba(255,68,102,0.4); }
 
+
+  /* Client-side workout logging */
+  .log-set-btn {
+    background: rgba(0,229,160,0.12);
+    border: 1px solid rgba(0,229,160,0.4);
+    color: var(--accent3);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 0.4rem;
+    text-transform: uppercase;
+  }
+  .log-set-btn:hover { background: rgba(0,229,160,0.25); }
+  .last-logged {
+    display: block;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--accent3);
+    margin-top: 0.25rem;
+    opacity: 0.85;
+  }
+  /* Client-side meal logging */
+  .meal-log-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.6rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .meal-log-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    padding: 0.3rem 0.7rem;
+    border-radius: 5px;
+    cursor: pointer;
+    text-transform: uppercase;
+  }
+  .meal-log-btn.ate-btn:hover  { color: var(--accent3); border-color: rgba(0,229,160,0.6); }
+  .meal-log-btn.swap-btn:hover { color: var(--accent2); border-color: rgba(255,184,74,0.6); }
+  .meal-log-btn.skip-btn:hover { color: #ff4466; border-color: rgba(255,68,102,0.6); }
+  .meal-log-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 5px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .meal-log-status.ate  { background: rgba(0,229,160,0.12); color: var(--accent3); border: 1px solid rgba(0,229,160,0.3); }
+  .meal-log-status.swap { background: rgba(255,184,74,0.12); color: var(--accent2); border: 1px solid rgba(255,184,74,0.3); }
+  .meal-log-status.skip { background: rgba(255,68,102,0.12); color: #ff4466;        border: 1px solid rgba(255,68,102,0.3); }
+  .meal-log-status .undo {
+    margin-left: 0.4rem; color: var(--muted); cursor: pointer; text-decoration: underline; font-size: 0.6rem;
+  }
+  .actuals-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.5rem;
+    margin-top: 1rem;
+  }
+  .actuals-card.complete { border-color: rgba(0,229,160,0.5); background: rgba(0,229,160,0.05); }
+
 </style>
 </head>
 <body>
@@ -2306,6 +2379,521 @@ window.renderDay = function() {
 updateSyncBadge();
 pullOverrides();
 startAutoPoll();
+</script>
+
+
+<!-- CLIENT WORKOUT LOG MODAL -->
+<div class="modal-overlay" id="workout-log-overlay" onclick="closeWorkoutLog(event)">
+  <div class="modal" style="max-width:480px;">
+    <button class="modal-close" onclick="cancelWorkoutLog()">✕</button>
+    <div class="modal-title" id="workout-log-title">Log this set</div>
+    <p style="font-size:0.78rem;color:var(--muted);margin-bottom:1rem;">What you actually hit — coach sees this on their dashboard.</p>
+    <div class="edit-modal-grid">
+      <label for="wl-sets">Sets done</label>     <input id="wl-sets" type="text" placeholder="e.g. 3" />
+      <label for="wl-reps">Reps</label>          <input id="wl-reps" type="text" placeholder="e.g. 8" />
+      <label for="wl-weight">Weight</label>      <input id="wl-weight" type="text" placeholder="e.g. 85kg" />
+      <label for="wl-rpe">RPE (1-10)</label>     <input id="wl-rpe" type="text" placeholder="e.g. 8" />
+      <label for="wl-notes">Notes (opt)</label>  <input id="wl-notes" type="text" placeholder="e.g. felt strong" />
+    </div>
+    <div class="edit-modal-actions">
+      <button class="edit-modal-cancel" onclick="cancelWorkoutLog()">Cancel</button>
+      <button class="edit-modal-save" onclick="saveWorkoutLog()">Log it</button>
+    </div>
+  </div>
+</div>
+
+<!-- CLIENT MEAL SWAP MODAL with auto-macros -->
+<div class="modal-overlay" id="swap-modal-overlay" onclick="closeSwapModal(event)">
+  <div class="modal" style="max-width:580px;">
+    <button class="modal-close" onclick="cancelSwap()">✕</button>
+    <div class="modal-title" id="swap-modal-title">What did you eat?</div>
+    <p style="font-size:0.8rem;color:var(--muted);margin-bottom:0.8rem;">Describe what you ate using foods + quantities. Example: <code style="background:var(--surface2);padding:0.1rem 0.3rem;border-radius:3px;color:var(--accent3);">200g chicken, 1 cup rice, 1 tbsp olive oil</code>. Macros auto-calculate.</p>
+    <div style="margin-bottom:0.8rem;">
+      <label for="sw-desc" style="font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;">What I ate</label>
+      <input id="sw-desc" type="text" placeholder="e.g. 200g chicken, 1 cup rice, broccoli" oninput="updateAutoMacros()" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:0.7rem 0.8rem;border-radius:6px;font-family:'DM Mono',monospace;font-size:0.85rem;margin-top:0.3rem;" />
+    </div>
+    <div id="auto-macro-preview" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.7rem 1rem;margin-bottom:1rem;display:none;">
+      <div style="font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.4rem;">Auto-calculated</div>
+      <div id="auto-macro-content"></div>
+    </div>
+    <p style="font-size:0.72rem;color:var(--muted);margin-bottom:0.6rem;">Or override macros manually:</p>
+    <div class="edit-modal-grid">
+      <label for="sw-cal">Calories</label>     <input id="sw-cal" type="number" min="0" placeholder="auto" />
+      <label for="sw-p">Protein (g)</label>    <input id="sw-p"   type="number" min="0" placeholder="auto" />
+      <label for="sw-c">Carbs (g)</label>      <input id="sw-c"   type="number" min="0" placeholder="auto" />
+      <label for="sw-f">Fat (g)</label>        <input id="sw-f"   type="number" min="0" placeholder="auto" />
+    </div>
+    <div class="edit-modal-actions">
+      <button class="edit-modal-cancel" onclick="cancelSwap()">Cancel</button>
+      <button class="edit-modal-save" onclick="saveSwap()">Log it</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ╔═════════════════════════════════════════════════════════════════════════╗
+// ║  v6 LOGGING ENGINE — workout actuals + meal logging w/ auto-macros      ║
+// ╚═════════════════════════════════════════════════════════════════════════╝
+const SIAM_LOGGING_CLIENT = 'siam';
+const SIAM_LOGGING_WEBHOOK = 'https://script.google.com/macros/s/AKfycbzqOeCQvc0XWjyFlJUF5-40Wroz1-tb_fSiot-G9vnOyCr1hwH4jErVBA8SN_3cc0O9gg/exec';
+
+// ─── FOOD DATABASE ───
+const FOOD_DB = [
+  // Proteins
+  { name: 'Chicken Breast',        aliases: ['chicken','chicken breast','grilled chicken'],            per: 100, unit: 'g', kcal: 165, p: 31, c: 0,  f: 3.6 },
+  { name: 'Chicken Thigh',         aliases: ['chicken thigh','chicken thighs','dark meat'],            per: 100, unit: 'g', kcal: 209, p: 26, c: 0,  f: 11 },
+  { name: 'Chicken Mince',         aliases: ['chicken mince','ground chicken'],                       per: 100, unit: 'g', kcal: 143, p: 17, c: 0,  f: 8 },
+  { name: 'Beef Mince (lean)',     aliases: ['beef','beef mince','ground beef','lean mince','mince'], per: 100, unit: 'g', kcal: 200, p: 26, c: 0,  f: 10 },
+  { name: 'Beef Steak',            aliases: ['steak','beef steak','sirloin','rump','eye fillet'],    per: 100, unit: 'g', kcal: 250, p: 26, c: 0,  f: 15 },
+  { name: 'Lamb',                  aliases: ['lamb','lamb chop','lamb mince'],                       per: 100, unit: 'g', kcal: 230, p: 25, c: 0,  f: 14 },
+  { name: 'Salmon',                aliases: ['salmon','smoked salmon'],                              per: 100, unit: 'g', kcal: 208, p: 20, c: 0,  f: 13 },
+  { name: 'Tuna',                  aliases: ['tuna','tuna can','canned tuna'],                       per: 100, unit: 'g', kcal: 116, p: 26, c: 0,  f: 1 },
+  { name: 'White Fish',            aliases: ['white fish','cod','snapper','barramundi'],             per: 100, unit: 'g', kcal: 105, p: 23, c: 0,  f: 1 },
+  { name: 'Turkey Breast',         aliases: ['turkey','turkey breast'],                              per: 100, unit: 'g', kcal: 135, p: 30, c: 0,  f: 1 },
+  { name: 'Egg',                   aliases: ['egg','eggs','boiled egg','scrambled egg'],             per: 1, unit: 'each', kcal: 78,  p: 6.3, c: 0.6, f: 5.3 },
+  { name: 'Egg White',             aliases: ['egg white','egg whites'],                              per: 100, unit: 'g', kcal: 52, p: 11, c: 0.7, f: 0.2 },
+  { name: 'Whey Protein',          aliases: ['whey','whey protein','protein powder','isolate'],      per: 30, unit: 'g', kcal: 120, p: 24, c: 3, f: 1.5 },
+  { name: 'Casein',                aliases: ['casein','slow protein'],                               per: 30, unit: 'g', kcal: 110, p: 24, c: 2, f: 1 },
+  { name: 'Greek Yogurt',          aliases: ['greek yogurt','greek yoghurt','chobani','yopro'],      per: 100, unit: 'g', kcal: 60, p: 10, c: 4, f: 0.4 },
+  { name: 'Cottage Cheese',        aliases: ['cottage cheese'],                                       per: 100, unit: 'g', kcal: 98, p: 11, c: 3.4, f: 4.3 },
+  { name: 'Cheddar',               aliases: ['cheddar','cheese','tasty cheese'],                     per: 100, unit: 'g', kcal: 403, p: 25, c: 1.3, f: 33 },
+  { name: 'Mozzarella',            aliases: ['mozzarella'],                                           per: 100, unit: 'g', kcal: 280, p: 22, c: 2, f: 22 },
+  { name: 'Feta',                  aliases: ['feta'],                                                 per: 100, unit: 'g', kcal: 264, p: 14, c: 4, f: 21 },
+  { name: 'Parmesan',              aliases: ['parmesan'],                                             per: 100, unit: 'g', kcal: 431, p: 38, c: 4, f: 29 },
+  { name: 'Milk (full fat)',       aliases: ['milk','full fat milk','full cream milk'],              per: 100, unit: 'ml', kcal: 60, p: 3.2, c: 4.8, f: 3.3 },
+  { name: 'Milk (skim)',           aliases: ['skim milk','low fat milk','skinny milk'],              per: 100, unit: 'ml', kcal: 35, p: 3.5, c: 5, f: 0.1 },
+  { name: 'Almond Milk',           aliases: ['almond milk','nut milk'],                              per: 100, unit: 'ml', kcal: 17, p: 0.6, c: 0.7, f: 1.5 },
+  // Carbs
+  { name: 'White Rice (cooked)',   aliases: ['rice','white rice','jasmine rice'],                    per: 100, unit: 'g', kcal: 130, p: 2.7, c: 28, f: 0.3 },
+  { name: 'Brown Rice (cooked)',   aliases: ['brown rice'],                                           per: 100, unit: 'g', kcal: 112, p: 2.6, c: 23, f: 0.9 },
+  { name: 'Basmati Rice',          aliases: ['basmati','basmati rice'],                              per: 100, unit: 'g', kcal: 121, p: 3, c: 25, f: 0.4 },
+  { name: 'Pasta (cooked)',        aliases: ['pasta','spaghetti','penne','fusilli'],                 per: 100, unit: 'g', kcal: 158, p: 5.8, c: 31, f: 0.9 },
+  { name: 'Oats (dry)',            aliases: ['oats','oatmeal','rolled oats','porridge'],             per: 100, unit: 'g', kcal: 389, p: 17, c: 66, f: 7 },
+  { name: 'Bread (wholegrain)',    aliases: ['bread','wholegrain bread','toast','slice of bread'],   per: 1, unit: 'each', kcal: 80, p: 4, c: 14, f: 1.5 },
+  { name: 'Wrap (wholegrain)',     aliases: ['wrap','tortilla','large wrap','small wrap'],           per: 1, unit: 'each', kcal: 220, p: 7, c: 38, f: 5 },
+  { name: 'Bagel',                 aliases: ['bagel'],                                                per: 1, unit: 'each', kcal: 280, p: 11, c: 56, f: 1.5 },
+  { name: 'Potato (boiled)',       aliases: ['potato','boiled potato','mashed potato'],              per: 100, unit: 'g', kcal: 87, p: 1.9, c: 20, f: 0.1 },
+  { name: 'Sweet Potato',          aliases: ['sweet potato','kumara'],                               per: 100, unit: 'g', kcal: 86, p: 1.6, c: 20, f: 0.1 },
+  { name: 'Couscous (cooked)',     aliases: ['couscous'],                                             per: 100, unit: 'g', kcal: 112, p: 3.8, c: 23, f: 0.2 },
+  { name: 'Quinoa (cooked)',       aliases: ['quinoa'],                                               per: 100, unit: 'g', kcal: 120, p: 4.4, c: 21, f: 1.9 },
+  { name: 'Banana',                aliases: ['banana','bananas'],                                     per: 1, unit: 'each', kcal: 105, p: 1.3, c: 27, f: 0.4 },
+  { name: 'Apple',                 aliases: ['apple','apples'],                                       per: 1, unit: 'each', kcal: 95, p: 0.5, c: 25, f: 0.3 },
+  { name: 'Orange',                aliases: ['orange'],                                               per: 1, unit: 'each', kcal: 62, p: 1.2, c: 15, f: 0.2 },
+  { name: 'Berries',               aliases: ['berries','blueberries','strawberries','raspberries'], per: 100, unit: 'g', kcal: 50, p: 0.7, c: 12, f: 0.3 },
+  { name: 'Honey',                 aliases: ['honey'],                                                per: 1, unit: 'tbsp', kcal: 64, p: 0.1, c: 17, f: 0 },
+  { name: 'Rice Cake',             aliases: ['rice cake','rice cakes'],                              per: 1, unit: 'each', kcal: 35, p: 0.7, c: 7.3, f: 0.3 },
+  { name: 'Cracker (wholegrain)',  aliases: ['cracker','crackers','vita wheat','salada'],            per: 1, unit: 'each', kcal: 22, p: 0.6, c: 4.2, f: 0.4 },
+  { name: 'Granola',               aliases: ['granola','muesli'],                                     per: 30, unit: 'g', kcal: 130, p: 3, c: 22, f: 4 },
+  // Fats
+  { name: 'Olive Oil',             aliases: ['olive oil','oil','evoo'],                              per: 1, unit: 'tbsp', kcal: 119, p: 0, c: 0, f: 14 },
+  { name: 'Butter',                aliases: ['butter'],                                               per: 1, unit: 'tbsp', kcal: 102, p: 0.1, c: 0, f: 12 },
+  { name: 'Avocado',               aliases: ['avocado','avo'],                                        per: 1, unit: 'each', kcal: 230, p: 3, c: 12, f: 21 },
+  { name: 'Peanut Butter',         aliases: ['peanut butter','pb'],                                   per: 1, unit: 'tbsp', kcal: 94, p: 4, c: 3, f: 8 },
+  { name: 'Almonds',               aliases: ['almonds','almond'],                                     per: 30, unit: 'g', kcal: 174, p: 6.4, c: 5.4, f: 15 },
+  { name: 'Peanuts',               aliases: ['peanuts','peanut'],                                     per: 30, unit: 'g', kcal: 170, p: 7.7, c: 4.9, f: 14 },
+  { name: 'Walnuts',               aliases: ['walnuts','walnut'],                                     per: 30, unit: 'g', kcal: 196, p: 4.6, c: 4.1, f: 19 },
+  { name: 'Cashews',               aliases: ['cashews','cashew'],                                     per: 30, unit: 'g', kcal: 165, p: 5.4, c: 9.2, f: 13 },
+  { name: 'Mixed Nuts',            aliases: ['mixed nuts','nuts','trail mix'],                        per: 30, unit: 'g', kcal: 180, p: 6, c: 6, f: 16 },
+  // Vegetables
+  { name: 'Broccoli',              aliases: ['broccoli'],                                             per: 100, unit: 'g', kcal: 35, p: 2.4, c: 7, f: 0.4 },
+  { name: 'Spinach',               aliases: ['spinach','baby spinach'],                              per: 100, unit: 'g', kcal: 23, p: 2.9, c: 3.6, f: 0.4 },
+  { name: 'Capsicum',              aliases: ['capsicum','bell pepper'],                              per: 100, unit: 'g', kcal: 31, p: 1, c: 6, f: 0.3 },
+  { name: 'Greens',                aliases: ['greens','mixed greens','steamed greens'],              per: 100, unit: 'g', kcal: 25, p: 2, c: 4, f: 0.3 },
+  { name: 'Carrot',                aliases: ['carrot','carrots'],                                     per: 100, unit: 'g', kcal: 41, p: 0.9, c: 10, f: 0.2 },
+  { name: 'Cucumber',              aliases: ['cucumber'],                                             per: 100, unit: 'g', kcal: 16, p: 0.7, c: 3.6, f: 0.1 },
+  { name: 'Tomato',                aliases: ['tomato','cherry tomato'],                              per: 100, unit: 'g', kcal: 18, p: 0.9, c: 3.9, f: 0.2 },
+  { name: 'Lettuce',               aliases: ['lettuce','romaine','iceberg'],                          per: 100, unit: 'g', kcal: 15, p: 1.4, c: 2.9, f: 0.2 },
+  // Packaged
+  { name: 'Quest Bar',             aliases: ['quest bar','quest','protein bar'],                      per: 1, unit: 'each', kcal: 190, p: 21, c: 22, f: 8 },
+  { name: 'Up&Go',                 aliases: ['up&go','up and go','upgo'],                            per: 1, unit: 'each', kcal: 230, p: 18, c: 32, f: 4 },
+  { name: 'Oxyshred RTD',          aliases: ['oxyshred'],                                             per: 1, unit: 'each', kcal: 150, p: 25, c: 6, f: 3 },
+  { name: 'Maxine Burn',           aliases: ['maxine burn','maxine'],                                 per: 1, unit: 'each', kcal: 180, p: 24, c: 12, f: 5 },
+  { name: 'YoPro',                 aliases: ['yopro','yo pro'],                                       per: 1, unit: 'each', kcal: 180, p: 22, c: 22, f: 2 },
+  { name: 'Chobani Protein',       aliases: ['chobani','chobani protein'],                            per: 1, unit: 'each', kcal: 130, p: 17, c: 12, f: 1.5 },
+  { name: 'Whey Shake',            aliases: ['whey shake','protein shake'],                           per: 1, unit: 'each', kcal: 150, p: 27, c: 5, f: 2 },
+  // Compound
+  { name: 'Big Mac',               aliases: ['big mac'],                                              per: 1, unit: 'each', kcal: 563, p: 26, c: 44, f: 33 },
+  { name: 'McChicken',             aliases: ['mcchicken'],                                            per: 1, unit: 'each', kcal: 400, p: 14, c: 39, f: 21 },
+  { name: 'Grilled Chicken Wrap',  aliases: ['grilled chicken wrap','maccas wrap','mcdonalds wrap'], per: 1, unit: 'each', kcal: 330, p: 21, c: 36, f: 12 },
+  { name: 'Quarter Pounder',       aliases: ['quarter pounder','qp'],                                 per: 1, unit: 'each', kcal: 520, p: 30, c: 41, f: 26 },
+  { name: 'Subway 6-inch',         aliases: ['subway','6-inch sub','chicken sub'],                    per: 1, unit: 'each', kcal: 350, p: 26, c: 47, f: 6 },
+  { name: 'Subway Footlong',       aliases: ['footlong','footlong sub'],                              per: 1, unit: 'each', kcal: 690, p: 50, c: 92, f: 12 },
+  { name: 'Caesar Salad',          aliases: ['caesar salad','caesar'],                                per: 1, unit: 'each', kcal: 470, p: 35, c: 18, f: 28 },
+  { name: 'Burrito Bowl',          aliases: ['burrito bowl','guzman','chipotle bowl'],                per: 1, unit: 'each', kcal: 650, p: 40, c: 70, f: 22 },
+  { name: 'Slice of Pizza',        aliases: ['pizza slice','slice of pizza','pizza'],                 per: 1, unit: 'each', kcal: 285, p: 12, c: 36, f: 10 },
+  { name: 'Sushi Roll',            aliases: ['sushi','sushi roll','salmon roll'],                     per: 1, unit: 'each', kcal: 350, p: 15, c: 60, f: 6 },
+  { name: 'Pad Thai',              aliases: ['pad thai','padthai'],                                   per: 1, unit: 'each', kcal: 700, p: 28, c: 95, f: 22 },
+  { name: 'Spag Bol',              aliases: ['spag bol','spaghetti bolognese','bolognese'],           per: 1, unit: 'each', kcal: 600, p: 30, c: 70, f: 22 },
+];
+const UNIT_TO_G = {
+  'g':1,'gram':1,'grams':1,'gms':1,'kg':1000,'kilogram':1000,
+  'oz':28.35,'ounce':28.35,'lb':453.6,'lbs':453.6,'pound':453.6,
+  'ml':1,'l':1000,'liter':1000,'litre':1000,
+  'cup':158,'cups':158,'tbsp':14,'tbs':14,'tablespoon':14,'tablespoons':14,
+  'tsp':5,'teaspoon':5,'teaspoons':5,
+};
+function _lookupFood(name) {
+  const n = name.toLowerCase().trim();
+  for (const f of FOOD_DB) { if (f.aliases.includes(n)) return f; }
+  for (const f of FOOD_DB) { for (const a of f.aliases) { if (n.includes(a) || a.includes(n)) return f; } }
+  return null;
+}
+function _scaleFood(food, qty) {
+  return { name: food.name, quantity: qty, unit: food.unit, grams: null,
+    kcal: Math.round(food.kcal * qty),
+    p: Math.round(food.p * qty * 10) / 10,
+    c: Math.round(food.c * qty * 10) / 10,
+    f: Math.round(food.f * qty * 10) / 10 };
+}
+function _parseFoodPiece(piece) {
+  piece = piece.trim(); if (!piece) return null;
+  const m = piece.match(/^(\d+(?:\.\d+)?)\s*([a-zA-Z]+)?\s*(.+)$/);
+  if (!m) {
+    const food = _lookupFood(piece);
+    if (!food) return { error: 'Unknown food: ' + piece };
+    return _scaleFood(food, 1);
+  }
+  const qty = parseFloat(m[1]);
+  let unit = (m[2] || '').toLowerCase();
+  let foodName = m[3].trim();
+  if (!UNIT_TO_G[unit]) { foodName = (unit + ' ' + foodName).trim(); unit = ''; }
+  const food = _lookupFood(foodName);
+  if (!food) return { error: 'Unknown food: ' + foodName };
+  if (food.unit === 'each' || food.unit === 'tbsp' || food.unit === 'tsp') return _scaleFood(food, qty);
+  const grams = unit ? qty * (UNIT_TO_G[unit] || 1) : qty;
+  const factor = grams / food.per;
+  return { name: food.name, quantity: qty, unit: unit || 'g', grams: Math.round(grams),
+    kcal: Math.round(food.kcal * factor),
+    p: Math.round(food.p * factor * 10) / 10,
+    c: Math.round(food.c * factor * 10) / 10,
+    f: Math.round(food.f * factor * 10) / 10 };
+}
+function parseFoodEntry(input) {
+  const pieces = input.split(/[,;+]|\s+and\s+|\s+\+\s+/i).map(p => p.trim()).filter(Boolean);
+  const items = []; const errors = [];
+  let totalCal=0,totalP=0,totalC=0,totalF=0;
+  for (const p of pieces) {
+    const r = _parseFoodPiece(p);
+    if (!r) continue;
+    if (r.error) { errors.push(r.error); continue; }
+    items.push(r);
+    totalCal += r.kcal; totalP += r.p; totalC += r.c; totalF += r.f;
+  }
+  return { items, errors, totals: {
+    kcal: Math.round(totalCal),
+    p: Math.round(totalP * 10) / 10,
+    c: Math.round(totalC * 10) / 10,
+    f: Math.round(totalF * 10) / 10,
+  } };
+}
+
+// ─── WORKOUT LOG ───
+function _workoutLogKey() { return SIAM_LOGGING_CLIENT + '_workout_log'; }
+function loadWorkoutLogs() {
+  try { return JSON.parse(localStorage.getItem(_workoutLogKey()) || '{}'); } catch(e) { return {}; }
+}
+function saveWorkoutLogsLocal(logs) { localStorage.setItem(_workoutLogKey(), JSON.stringify(logs)); }
+function _workoutLogId(phase, dayIdx, exName) { return 'p' + phase + '.d' + dayIdx + '.' + exName; }
+function getWorkoutLogEntry(phase, dayIdx, exName) { return loadWorkoutLogs()[_workoutLogId(phase, dayIdx, exName)] || null; }
+function postWorkoutLog(entry) {
+  if (!SIAM_LOGGING_WEBHOOK) return;
+  fetch(SIAM_LOGGING_WEBHOOK, {
+    method: 'POST', mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({
+      type: 'workout', client: SIAM_LOGGING_CLIENT,
+      phase: entry.phase, dayIdx: entry.dayIdx, exerciseName: entry.exName,
+      setsActual: entry.sets, repsActual: entry.reps, weightActual: entry.weight,
+      rpeActual: entry.rpe, notes: entry.notes || '',
+      timestamp: new Date().toISOString(),
+    })
+  }).then(() => { if (typeof showSyncMsg === 'function') showSyncMsg('✓ workout logged', 'ok'); })
+    .catch(e => console.warn('Workout log POST failed:', e));
+}
+let _workoutLogCtx = null;
+function openWorkoutLog(phase, dayIdx, exName, prescribed) {
+  _workoutLogCtx = { phase, dayIdx, exName };
+  document.getElementById('workout-log-title').textContent = exName;
+  const existing = getWorkoutLogEntry(phase, dayIdx, exName);
+  document.getElementById('wl-sets').value   = existing ? existing.sets   : (prescribed.sets   || '');
+  document.getElementById('wl-reps').value   = existing ? existing.reps   : (prescribed.reps   || '');
+  document.getElementById('wl-weight').value = existing ? existing.weight : (prescribed.weight || '');
+  document.getElementById('wl-rpe').value    = existing ? existing.rpe    : (prescribed.rpe    || '');
+  document.getElementById('wl-notes').value  = existing ? existing.notes  : '';
+  document.getElementById('workout-log-overlay').classList.add('open');
+}
+function cancelWorkoutLog() { document.getElementById('workout-log-overlay').classList.remove('open'); }
+function closeWorkoutLog(e) { if (e.target === document.getElementById('workout-log-overlay')) cancelWorkoutLog(); }
+function saveWorkoutLog() {
+  if (!_workoutLogCtx) return;
+  const entry = {
+    phase: _workoutLogCtx.phase, dayIdx: _workoutLogCtx.dayIdx, exName: _workoutLogCtx.exName,
+    sets:  document.getElementById('wl-sets').value.trim(),
+    reps:  document.getElementById('wl-reps').value.trim(),
+    weight: document.getElementById('wl-weight').value.trim(),
+    rpe:   document.getElementById('wl-rpe').value.trim(),
+    notes: document.getElementById('wl-notes').value.trim(),
+    ts: new Date().toISOString(),
+  };
+  const logs = loadWorkoutLogs();
+  logs[_workoutLogId(entry.phase, entry.dayIdx, entry.exName)] = entry;
+  saveWorkoutLogsLocal(logs);
+  postWorkoutLog(entry);
+  cancelWorkoutLog();
+  renderDay();
+}
+
+// ─── MEAL LOG ───
+function _mealLogKey() { return SIAM_LOGGING_CLIENT + '_meal_log'; }
+function loadMealLogs() {
+  try { return JSON.parse(localStorage.getItem(_mealLogKey()) || '{}'); } catch(e) { return {}; }
+}
+function _mealLogId(week, dayIdx, mealIdx) { return 'w' + week + '.d' + dayIdx + '.m' + mealIdx; }
+function getMealLogEntry(week, dayIdx, mealIdx) { return loadMealLogs()[_mealLogId(week, dayIdx, mealIdx)] || null; }
+function saveMealLogLocal(logs) { localStorage.setItem(_mealLogKey(), JSON.stringify(logs)); }
+function postMealLog(entry) {
+  if (!SIAM_LOGGING_WEBHOOK) return;
+  fetch(SIAM_LOGGING_WEBHOOK, {
+    method: 'POST', mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({
+      type: 'meal', client: SIAM_LOGGING_CLIENT,
+      week: entry.week, dayIdx: entry.dayIdx, mealIdx: entry.mealIdx,
+      mealName: entry.mealName, status: entry.status, swapDesc: entry.swapDesc || '',
+      calActual: entry.cal || 0, pActual: entry.p || 0, cActual: entry.c || 0, fActual: entry.f || 0,
+      timestamp: new Date().toISOString(),
+    })
+  }).then(() => { if (typeof showSyncMsg === 'function') showSyncMsg('✓ logged', 'ok'); })
+    .catch(e => console.warn('Meal log POST failed:', e));
+}
+function logMealQuick(week, dayIdx, mealIdx, status) {
+  const meals = (mealPlan[week] && mealPlan[week][dayIdx]) ? mealPlan[week][dayIdx].meals : [];
+  const meal = meals[mealIdx]; if (!meal) return;
+  const logs = loadMealLogs();
+  const entry = {
+    week, dayIdx, mealIdx, mealName: meal.name, status,
+    cal: status === 'ate' ? (meal.cal || 0) : 0,
+    p:   status === 'ate' ? (meal.p   || 0) : 0,
+    c:   status === 'ate' ? (meal.c   || 0) : 0,
+    f:   status === 'ate' ? (meal.f   || 0) : 0,
+    ts: new Date().toISOString(),
+  };
+  logs[_mealLogId(week, dayIdx, mealIdx)] = entry;
+  saveMealLogLocal(logs);
+  postMealLog(entry);
+  if (typeof renderNutritionDay === 'function') renderNutritionDay();
+}
+function unlogMeal(week, dayIdx, mealIdx) {
+  const logs = loadMealLogs();
+  delete logs[_mealLogId(week, dayIdx, mealIdx)];
+  saveMealLogLocal(logs);
+  postMealLog({ week, dayIdx, mealIdx, mealName: '', status: 'undo' });
+  if (typeof renderNutritionDay === 'function') renderNutritionDay();
+}
+let _swapCtx = null;
+function openSwapModal(week, dayIdx, mealIdx) {
+  _swapCtx = { week, dayIdx, mealIdx };
+  const meals = (mealPlan[week] && mealPlan[week][dayIdx]) ? mealPlan[week][dayIdx].meals : [];
+  const meal = meals[mealIdx] || {};
+  document.getElementById('swap-modal-title').textContent = 'Swapped: ' + (meal.name || 'meal') + ' — what did you eat?';
+  document.getElementById('sw-desc').value = '';
+  document.getElementById('sw-cal').value = '';
+  document.getElementById('sw-p').value = '';
+  document.getElementById('sw-c').value = '';
+  document.getElementById('sw-f').value = '';
+  document.getElementById('auto-macro-preview').style.display = 'none';
+  document.getElementById('swap-modal-overlay').classList.add('open');
+}
+function cancelSwap() { document.getElementById('swap-modal-overlay').classList.remove('open'); }
+function closeSwapModal(e) { if (e.target === document.getElementById('swap-modal-overlay')) cancelSwap(); }
+function updateAutoMacros() {
+  const desc = document.getElementById('sw-desc').value.trim();
+  const preview = document.getElementById('auto-macro-preview');
+  const content = document.getElementById('auto-macro-content');
+  if (!desc) { preview.style.display = 'none'; return; }
+  const parsed = parseFoodEntry(desc);
+  if (!parsed.items.length && parsed.errors.length === 0) { preview.style.display = 'none'; return; }
+  let html = '';
+  if (parsed.items.length) {
+    html += parsed.items.map(i => `<div style="display:flex;justify-content:space-between;font-size:0.78rem;padding:0.2rem 0;border-bottom:1px solid rgba(255,255,255,0.04);"><span style="color:var(--text);">${i.quantity}${i.unit !== 'each' ? i.unit : ''} ${i.name}</span><span style="color:var(--muted);font-family:'DM Mono',monospace;">${i.kcal} kcal · ${i.p}p ${i.c}c ${i.f}f</span></div>`).join('');
+    html += `<div style="display:flex;justify-content:space-between;font-size:0.82rem;padding:0.5rem 0 0;margin-top:0.4rem;border-top:1px solid var(--border);font-weight:600;"><span style="color:var(--accent3);">TOTAL</span><span style="color:var(--accent3);font-family:'DM Mono',monospace;">${parsed.totals.kcal} kcal · ${parsed.totals.p}p ${parsed.totals.c}c ${parsed.totals.f}f</span></div>`;
+  }
+  if (parsed.errors.length) {
+    html += parsed.errors.map(e => `<div style="font-size:0.72rem;color:var(--accent2);padding:0.2rem 0;">⚠ ${e} — enter manually below</div>`).join('');
+  }
+  content.innerHTML = html;
+  preview.style.display = '';
+}
+function saveSwap() {
+  if (!_swapCtx) return;
+  const desc = document.getElementById('sw-desc').value.trim();
+  if (!desc) { alert('Describe what you ate.'); return; }
+  const parsed = parseFoodEntry(desc);
+  const mealsForDay = (mealPlan[_swapCtx.week] && mealPlan[_swapCtx.week][_swapCtx.dayIdx]) ? mealPlan[_swapCtx.week][_swapCtx.dayIdx].meals : [];
+  const meal = mealsForDay[_swapCtx.mealIdx] || {};
+  const manualCal = parseInt(document.getElementById('sw-cal').value);
+  const manualP   = parseInt(document.getElementById('sw-p').value);
+  const manualC   = parseInt(document.getElementById('sw-c').value);
+  const manualF   = parseInt(document.getElementById('sw-f').value);
+  const finalCal = !isNaN(manualCal) ? manualCal : (parsed.totals.kcal || Math.round((meal.cal || 0) * 0.8));
+  const finalP   = !isNaN(manualP)   ? manualP   : (parsed.totals.p   || Math.round((meal.p   || 0) * 0.8));
+  const finalC   = !isNaN(manualC)   ? manualC   : (parsed.totals.c   || Math.round((meal.c   || 0) * 0.8));
+  const finalF   = !isNaN(manualF)   ? manualF   : (parsed.totals.f   || Math.round((meal.f   || 0) * 0.8));
+  const logs = loadMealLogs();
+  const entry = {
+    week: _swapCtx.week, dayIdx: _swapCtx.dayIdx, mealIdx: _swapCtx.mealIdx,
+    mealName: meal.name, status: 'swap', swapDesc: desc,
+    cal: finalCal, p: finalP, c: finalC, f: finalF,
+    ts: new Date().toISOString(),
+  };
+  logs[_mealLogId(_swapCtx.week, _swapCtx.dayIdx, _swapCtx.mealIdx)] = entry;
+  saveMealLogLocal(logs);
+  postMealLog(entry);
+  cancelSwap();
+  if (typeof renderNutritionDay === 'function') renderNutritionDay();
+}
+function computeDailyActuals(week, dayIdx) {
+  const meals = (mealPlan[week] && mealPlan[week][dayIdx]) ? mealPlan[week][dayIdx].meals : [];
+  const logs = loadMealLogs();
+  let cal=0,p=0,c=0,f=0,logged=0,planned=0;
+  meals.forEach((m, mIdx) => {
+    if (!m.name) return;
+    planned++;
+    const log = logs[_mealLogId(week, dayIdx, mIdx)];
+    if (log && log.status) {
+      logged++;
+      cal += log.cal || 0; p += log.p || 0; c += log.c || 0; f += log.f || 0;
+    }
+  });
+  return { cal, p, c, f, logged, planned };
+}
+
+// ─── OVERRIDE renderDay to add LOG SET buttons (extends prior trainer-edit version) ───
+const _siam_renderDay_prev = window.renderDay;
+window.renderDay = function() {
+  _siam_renderDay_prev();  // run the prior version first
+  // Then inject LOG buttons + last-logged for client mode
+  const trainer = (typeof isTrainerMode === 'function') && isTrainerMode();
+  if (trainer) return;  // trainer mode handles its own buttons
+  const wc = document.getElementById('workout-content');
+  if (!wc) return;
+  // Re-render with log buttons (build from scratch to insert log UI per row)
+  try {
+    const p = phases[currentPhase];
+    const day = p.days[currentDay];
+    const exercises = (typeof getDayExercises === 'function') ? getDayExercises(currentPhase, currentDay) : day.exercises;
+    const rows = exercises.map((ex, i) => {
+      const hasHowTo = howTos[ex.name];
+      const btn = hasHowTo ? `<button class="howto-btn" onclick="openModal('${ex.name.replace(/'/g,"\\'")}')">HOW TO</button>` : '';
+      const exNameEsc = ex.name.replace(/'/g, "\\'");
+      const presEsc = JSON.stringify({ sets: ex.sets, reps: ex.reps, weight: ex.weight, rpe: ex.rpe }).replace(/"/g, '&quot;');
+      const logBtn = `<button class="log-set-btn" onclick="openWorkoutLog(${currentPhase},${currentDay},'${exNameEsc}',${presEsc})">📝 LOG</button>`;
+      const logEntry = getWorkoutLogEntry(currentPhase, currentDay, ex.name);
+      const logged = logEntry ? `<span class="last-logged">✓ logged: ${logEntry.sets || '?'}×${logEntry.reps || '?'} @ ${logEntry.weight || '?'} ${logEntry.rpe ? '· RPE ' + logEntry.rpe : ''}</span>` : '';
+      return `<tr>
+        <td class="ex-name">${ex.name}${btn}${logBtn}${logged}</td>
+        <td class="ex-sets">${ex.sets}</td>
+        <td class="ex-reps">${ex.reps}</td>
+        <td class="ex-weight">${ex.weight}</td>
+        <td class="ex-rest">${ex.rest}</td>
+        <td class="ex-rpe"><span class="rpe-pill ${getRpeClass(ex.rpe)}">${ex.rpe}</span></td>
+      </tr>`;
+    }).join('');
+    wc.innerHTML = `<div class="workout-day-title">${day.label}<span class="day-badge">${day.badge}</span></div><div class="workout-table-wrap"><table><thead><tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Weight</th><th>Rest</th><th>RPE</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  } catch(e) { console.warn('Log button injection failed:', e); }
+};
+
+// ─── OVERRIDE renderNutritionDayContent to add meal logging UI + actuals card ───
+const _siam_renderNutDay_prev = window.renderNutritionDayContent;
+window.renderNutritionDayContent = function() {
+  if (typeof _siam_renderNutDay_prev === 'function') _siam_renderNutDay_prev();
+  // Inject meal log UI on each meal card + add actuals card at the bottom
+  const trainer = (typeof isTrainerMode === 'function') && isTrainerMode();
+  if (trainer) return;
+  const wrap = document.getElementById('nutrition-day-content');
+  if (!wrap) return;
+  const meals = (mealPlan[currentNutritionWeek] && mealPlan[currentNutritionWeek][currentNutritionDay]) ? mealPlan[currentNutritionWeek][currentNutritionDay].meals : [];
+  // Re-render meal cards with log UI
+  const mealCards = wrap.querySelectorAll('.meal-card');
+  meals.forEach((meal, mIdx) => {
+    if (!meal.name || !meal.cal) return;
+    const card = mealCards[mIdx];
+    if (!card) return;
+    if (card.querySelector('.meal-log-row')) return; // already injected
+    const logEntry = getMealLogEntry(currentNutritionWeek, currentNutritionDay, mIdx);
+    let logUI;
+    if (logEntry && logEntry.status) {
+      const label = logEntry.status === 'ate' ? '✓ ATE' : logEntry.status === 'swap' ? '⚠ SWAPPED' : '✗ SKIPPED';
+      const sub = logEntry.swapDesc ? ` — ${logEntry.swapDesc}` : '';
+      logUI = `<div class="meal-log-row"><span class="meal-log-status ${logEntry.status}">${label}${sub}<span class="undo" onclick="unlogMeal(${currentNutritionWeek},${currentNutritionDay},${mIdx})">undo</span></span></div>`;
+    } else {
+      logUI = `<div class="meal-log-row">
+        <button class="meal-log-btn ate-btn"  onclick="logMealQuick(${currentNutritionWeek},${currentNutritionDay},${mIdx},'ate')">✓ Ate it</button>
+        <button class="meal-log-btn swap-btn" onclick="openSwapModal(${currentNutritionWeek},${currentNutritionDay},${mIdx})">⚠ Swapped</button>
+        <button class="meal-log-btn skip-btn" onclick="logMealQuick(${currentNutritionWeek},${currentNutritionDay},${mIdx},'skip')">✗ Skipped</button>
+      </div>`;
+    }
+    // Append after meal-food cell (col 2)
+    const cells = card.querySelectorAll('.meal-food');
+    if (cells.length) {
+      const div = document.createElement('div');
+      div.innerHTML = logUI;
+      cells[0].appendChild(div.firstChild);
+    }
+  });
+  // Add daily actuals card at the bottom
+  if (!wrap.querySelector('.actuals-card')) {
+    const t = (typeof getPhaseTargets === 'function') ? getPhaseTargets(currentNutritionPhase) : phaseTargets[currentNutritionPhase];
+    const a = computeDailyActuals(currentNutritionWeek, currentNutritionDay);
+    const completePct = a.planned ? Math.round((a.logged / a.planned) * 100) : 0;
+    const calPct = a.cal ? Math.min(100, Math.round((a.cal / t.cal) * 100)) : 0;
+    const pPct = a.p ? Math.min(100, Math.round((a.p / t.p) * 100)) : 0;
+    const card = document.createElement('div');
+    card.className = 'actuals-card' + (completePct === 100 ? ' complete' : '');
+    card.innerHTML = `<div style="font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--muted);letter-spacing:0.15em;margin-bottom:0.75rem;">MY ACTUAL TODAY · ${a.logged}/${a.planned} meals logged ${completePct === 100 ? '· ✓ COMPLETE' : ''}</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;"><div><div style="font-size:0.65rem;color:var(--muted);">Calories</div><div style="font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:${calPct>=90?'var(--accent3)':'var(--accent)'};">${a.cal}</div><div style="font-size:0.65rem;color:var(--muted);">vs ${t.cal} · ${calPct}%</div></div><div><div style="font-size:0.65rem;color:var(--muted);">Protein</div><div style="font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:${pPct>=90?'var(--accent3)':'var(--accent)'};">${a.p}g</div><div style="font-size:0.65rem;color:var(--muted);">vs ${t.p}g · ${pPct}%</div></div><div><div style="font-size:0.65rem;color:var(--muted);">Carbs</div><div style="font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--accent2);">${a.c}g</div><div style="font-size:0.65rem;color:var(--muted);">vs ${t.c}g</div></div><div><div style="font-size:0.65rem;color:var(--muted);">Fat</div><div style="font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--accent3);">${a.f}g</div><div style="font-size:0.65rem;color:var(--muted);">vs ${t.f}g</div></div></div>`;
+    wrap.appendChild(card);
+  }
+};
+
+// ─── UPGRADE saveCheckin to use v2 webhook (WeightLog + CheckIns tabs) ───
+// Wrap the existing saveCheckin so it ALSO pushes to the new endpoints.
+const _siam_saveCheckin_prev = (typeof saveCheckin === 'function') ? saveCheckin : null;
+if (_siam_saveCheckin_prev) {
+  window.saveCheckin = async function() {
+    // Capture weight/week BEFORE the original fn clears inputs
+    const w = parseFloat(document.getElementById('input-weight').value);
+    const wk = parseInt(document.getElementById('input-week').value);
+    await _siam_saveCheckin_prev();  // existing email + old-format sheet POST
+    // Now push to v2 tabs
+    if (SIAM_LOGGING_WEBHOOK && w && wk) {
+      try {
+        await fetch(SIAM_LOGGING_WEBHOOK, {
+          method: 'POST', mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            type: 'weight', client: SIAM_LOGGING_CLIENT,
+            weightKg: w, notes: 'check-in week ' + wk,
+            timestamp: new Date().toISOString(),
+          })
+        });
+        await fetch(SIAM_LOGGING_WEBHOOK, {
+          method: 'POST', mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            type: 'checkin', client: SIAM_LOGGING_CLIENT,
+            week: wk, weightKg: w,
+            notes: 'auto from check-in form',
+            timestamp: new Date().toISOString(),
+          })
+        });
+      } catch(e) { console.warn('v2 check-in POST failed:', e); }
+    }
+  };
+}
+
+// Trigger a re-render so the new UI shows up
+if (typeof renderDay === 'function') { try { renderDay(); } catch(e) {} }
+if (typeof renderNutritionDay === 'function') { try { renderNutritionDay(); } catch(e) {} }
 </script>
 
 </body>
