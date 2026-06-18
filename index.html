@@ -888,6 +888,99 @@
   <div id="workout-content"></div>
 
   <div id="progression-content"></div>
+
+<!-- ─── LOW DAY CIRCUIT (week-5 patch) ─── -->
+<div id="low-day-circuit" style="margin-top:2.5rem;background:var(--surface);border:1px solid rgba(0,229,160,0.4);border-radius:14px;padding:1.5rem 1.7rem;">
+  <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.8rem;">
+    <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:0.04em;color:var(--accent3);">🏠 LOW DAY CIRCUIT</h3>
+    <span style="font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.1em;color:var(--muted);text-transform:uppercase;">~20 min · bodyweight · no gym needed</span>
+  </div>
+
+  <p style="color:var(--muted);font-size:0.85rem;line-height:1.6;margin-bottom:1.2rem;">
+    For days when the gym feels impossible. Run this 20-min circuit at home — kitchen bench, doorframe, lounge floor. Hit it 2-3 rounds depending on time. <strong style="color:var(--text);">Better to do 50% of something than 100% of nothing.</strong> The streak matters more than the session does.
+  </p>
+
+  <div class="workout-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Exercise</th>
+          <th>Sets</th>
+          <th>Reps</th>
+          <th>Notes</th>
+          <th>Rest</th>
+          <th>RPE</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="ex-name">Push-Ups</td>
+          <td class="ex-sets">3</td>
+          <td class="ex-reps">8-15</td>
+          <td class="ex-weight">BW · knees if needed</td>
+          <td class="ex-rest">45s</td>
+          <td class="ex-rpe"><span class="rpe-pill rpe-7">7</span></td>
+        </tr>
+        <tr>
+          <td class="ex-name">Assisted Pull-Ups</td>
+          <td class="ex-sets">3</td>
+          <td class="ex-reps">6-10</td>
+          <td class="ex-weight">Doorframe / chair-assist</td>
+          <td class="ex-rest">60s</td>
+          <td class="ex-rpe"><span class="rpe-pill rpe-7">7</span></td>
+        </tr>
+        <tr>
+          <td class="ex-name">Bulgarian Split Squat</td>
+          <td class="ex-sets">3</td>
+          <td class="ex-reps">10 each</td>
+          <td class="ex-weight">BW · back foot on couch</td>
+          <td class="ex-rest">45s</td>
+          <td class="ex-rpe"><span class="rpe-pill rpe-7">7</span></td>
+        </tr>
+        <tr>
+          <td class="ex-name">Walking Lunges</td>
+          <td class="ex-sets">2</td>
+          <td class="ex-reps">20 steps</td>
+          <td class="ex-weight">BW · controlled tempo</td>
+          <td class="ex-rest">45s</td>
+          <td class="ex-rpe"><span class="rpe-pill rpe-7">7</span></td>
+        </tr>
+        <tr>
+          <td class="ex-name">Plank Hold</td>
+          <td class="ex-sets">3</td>
+          <td class="ex-reps">45 sec</td>
+          <td class="ex-weight">BW · brace hard, don't sag</td>
+          <td class="ex-rest">30s</td>
+          <td class="ex-rpe"><span class="rpe-pill rpe-7">7</span></td>
+        </tr>
+        <tr>
+          <td class="ex-name">Hollow Hold</td>
+          <td class="ex-sets">3</td>
+          <td class="ex-reps">30 sec</td>
+          <td class="ex-weight">BW · low back pressed flat</td>
+          <td class="ex-rest">30s</td>
+          <td class="ex-rpe"><span class="rpe-pill rpe-7">7</span></td>
+        </tr>
+        <tr>
+          <td class="ex-name">Burpees (finisher)</td>
+          <td class="ex-sets">3</td>
+          <td class="ex-reps">8</td>
+          <td class="ex-weight">BW · controlled, no rush</td>
+          <td class="ex-rest">60s</td>
+          <td class="ex-rpe"><span class="rpe-pill rpe-8">8</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="background:rgba(0,229,160,0.05);border:1px solid rgba(0,229,160,0.2);border-radius:10px;padding:1rem 1.2rem;margin-top:1.2rem;">
+    <div style="font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--accent3);letter-spacing:0.15em;margin-bottom:0.3rem;">WHEN TO USE THIS</div>
+    <div style="font-size:0.83rem;color:var(--muted);line-height:1.6;">
+      Use as a fallback on days you'd otherwise skip the gym entirely. Not a replacement for your main 4 sessions — it's the bridge between "I'm not training today" and "I did something." The streak matters more than the session. Log it as a workout in the program either way (sets/reps/RPE) so Omar can see you showed up.
+    </div>
+  </div>
+</div>
+
 </section>
 
 <!-- CARDIO -->
@@ -1679,7 +1772,7 @@ function deleteCheckin(i){
 
 
 // ─── NUTRITION DATA ──────────────────────────────────────────────────────────
-const phaseTargets={1:{cal:2400,p:200,c:240,f:80,deficit:600},2:{cal:2100,p:200,c:170,f:65,deficit:900},3:{cal:1800,p:200,c:115,f:60,deficit:1200}};
+const phaseTargets={1:{cal:2400,p:200,c:240,f:80,deficit:600},2:{cal:2100,p:180,c:221,f:55,deficit:900},3:{cal:1800,p:200,c:115,f:60,deficit:1200}};
 const DAY_NAMES=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 const DAY_TYPES=['Weights','Weights','Cardio/Rest','Weights','Weights','Cardio','Rest + Meal Prep'];
 const mealPlan={};
